@@ -11,7 +11,7 @@ The indexes support phrase search such as “hong kong” in page titles and pag
 
 The JDBM library from http://jdbm.sourceforge.net/ is used to create and manipulate the file structures for storing the inverted file and other file structures needed.
 
-A retrieval function (or called the search engine) is implemented to compare a list of query terms against the inverted file and returns the top documents, up to a maximum of 50, to the user in a ranked order according to the vector space model.  As noted about, phrase must be supported, e.g., “hong kong” universities.
+A retrieval function (or called the search engine) is implemented to compare a list of query terms against the inverted file and returns the top documents, up to a maximum of 50, to the user in a ranked order according to the vector space model.
 
 Term weighting formula is based on tfxidf/max(tf) and document similarity is based on cosine similarity measure.
 
