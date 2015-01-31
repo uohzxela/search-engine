@@ -1,6 +1,23 @@
 ## Search Engine 
 
-A search engine written in Java, implemented with web crawler and indexer. Supports title-matching mechanism and phrase queries (e.g. "hong kong").
+A search engine written in Java with clean and responsive AJAX-laden interface. 
+## Mechanisms and implementation
+
+A web crawler is implemented to fetch pages recursively from a given web site and an indexer is implemented to extract keywords from a page and inserts them into an inverted file. The indexer removes all stop words from the file. It then transforms words into stems using the Porter's algorithm. 
+
+It inserts the stems into the two inverted files: all stems extracted from the page body, together with all statistical information needed to support the vector space model, are inserted into one inverted file and all stems extracted from the page title are inserted into another inverted file. 
+
+The indexes support phrase search such as “hong kong” in page titles and page bodies.
+
+The JDBM library from http://jdbm.sourceforge.net/ is suggested to be used to create and manipulate the file structures for storing the inverted file and other file structures needed.
+
+A retrieval function (or called the search engine) that compares a list of query terms against the inverted file and returns the top documents, up to a maximum of 50, to the user in a ranked order according to the vector space model.  As noted about, phrase must be supported, e.g., “hong kong” universities.
+
+Term weighting formula is based on tfxidf/max(tf) and document similarity is based on cosine similarity measure.
+
+Implemented a mechanism to favor matches in title. For example, a match in the title would significantly boost the rank of a page.
+
+A web interface that accepts a user query in a text box, submits the query to the search engine, and displays the returned results to the user
 
 ## Run the search engine
 To run this program please follow these steps.
