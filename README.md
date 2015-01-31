@@ -1,6 +1,11 @@
 ## Search Engine 
 
 A search engine written in Java with clean and responsive AJAX-laden interface. 
+
+## Contributors
+
+Alex Jiao, Alexandre Cukier, Rasmus Hvingelby
+
 ## Mechanisms of search engine
 
 A web crawler is implemented to fetch pages recursively from a given web site and an indexer is implemented to extract keywords from a page and inserts them into an inverted file. The indexer removes all stop words from the file. It then transforms words into stems using the Porter's algorithm. 
