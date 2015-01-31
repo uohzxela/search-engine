@@ -1,0 +1,196 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head> 
+	<title> Search Engine </title>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="../se/css/bootstrap.min.css">
+	<!-- Bootstrap JavaScript -->
+	<script src="../se/js/jquery-2.1.1.min.js"></script>
+	<script src="../se/js/bootstrap.min.js"></script>
+	
+	<script type = "text/javascript">
+		/**
+		 * Function that toggles more children links
+		 * on a result with more than 5 children links.
+		 */
+		function toggleMore (resultId) {        
+        	$('#'+resultId).toggle('show');
+        	if($('#'+resultId).siblings('button').text() == 'Show more') {
+        		$('#'+resultId).siblings('button').text('Show less');
+        	} else {
+        		$('#'+resultId).siblings('button').text('Show more');
+        	}
+    	}
+
+    	/**
+    	 * Delay snippet for delaying keyup listener.
+    	 * Taken from:
+    	 * http://scriptbaker.com/keyup-function-with-delay/
+    	 */
+    	var delay = (function(){
+        	var timer = 0;
+        	return function(callback, ms){
+        	    clearTimeout (timer);
+        	    timer = setTimeout(callback, ms);
+        	};
+    	})();
+
+    	function relatedSearch (resultId) {
+    		var keywords = $('div#'+resultId).find('ul.list-inline').children().first();
+    		var newQuery = "";
+    		for(var i=0; i<5; i++){
+    			var split = keywords.next().text().split(' ');
+    			var keyword = split[0];
+
+    			newQuery += keyword+" ";
+    			keywords = keywords.next();
+    		}
+
+    		$('#query').val(newQuery);
+    		search();
+    	}
+
+    	/**
+		 * AJAX Call function
+		 * This function performs the AJAX call and updates the page
+		 * based on the response it receives.
+		 */
+    	function search(event){
+			$('#results').empty();
+			var formData = {
+				'query' : $('#query').val() 
+			};
+			if($('#query').val().trim().length){
+				// Process the form via JQuery AJAX
+				$.ajax({
+					type 		: 'POST',
+					url 		: 'se.jsp',
+					data 		: formData, 
+					dataType 	: 'json'
+				})
+				.done(function(data) {
+					console.log(data)
+					if (! data.success) {
+						$('.form-group').append('<div class="alert alert-danger alert-dismissible fade in" role="alert" id="noresponse"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>No response on the query "'+data.query+'"</div>');
+					} else {
+						// Loops through all the results
+						$.each(data.res, function(i, val) {
+							var cloned = $( "#prototype" ).clone();
+							cloned.attr('id',i);
+							cloned.attr('style', 'display:true;');
+							cloned.find('.title').text(val.title);
+							cloned.find('.url').append('<a href="'+val.url+'"><u>'+val.url+'</u></a>');
+							cloned.find('.last_modified').text(val.last_modified);
+							cloned.find('.size').text(val.size);
+							cloned.find('.score').append('</br>'+val.score);
+							cloned.find('.parent_links').append('<p><a href="'+val.parent_links+'"><u>'+val.parent_links+'</u></a> </p>');
+						
+							cloned.find('.list-inline').append('<li><button class="btn btn-success btn-xs" onClick="relatedSearch('+cloned.attr('id')+')" type="button">Find related</button></li>');
+							$.each(val.keywords, function(k, kvalue) {
+								cloned.find('.list-inline').append('<li>'+kvalue+';</li>');
+							});
+
+
+							var count = 0;
+							$.each(val.children_links, function(l, lvalue) {
+								if (count < 5) {
+									cloned.find('.children_links').append('<p><a href="'+lvalue+'"><u>'+lvalue+'</u></a> </p>');
+								} else {
+									if(cloned.find('#more-'+cloned.attr('id')).length > 0){
+										cloned.find('#more-'+cloned.attr('id')).append('<p><a href="'+lvalue+'"><u>'+lvalue+'</u></a> </p>');
+									} else {
+										cloned.find('.children_links').append('<button class="btn btn-warning btn-xs" type="button" onClick="toggleMore(\'more-'+cloned.attr('id')+'\')">Show more</button>');
+										cloned.find('.children_links').append('<div id="more-'+cloned.attr('id')+'" class="toggle"></div>');
+									}
+								}
+								count++;
+							});
+							cloned.appendTo("#results");
+						});
+						$('.toggle').toggle('show');
+					}
+				})
+				.fail(function(data) {
+			
+				});
+			}				
+		}
+
+		/**
+		 * Event listeners
+		 */
+		$(document).ready(function(){
+			/**
+			 * Perform search on button click or when user hits enter.
+			 */
+			$('#searchbtn').on('click', search);
+			$('.textfield').keypress(function (e) {
+  				if (e.which == 13) search();
+			});
+
+			/**
+			 * User experience function to perform delayed AJAX queries
+			 * when user is writing in the textfield.
+			 */
+			$('.textfield').keyup(function (e) {
+				$("#noresponse").alert('close');
+				
+				var minlength = 3;
+				if($('#query').val().trim().length >= 3){
+					delay(function(){
+      					search();
+    				}, 500 );
+				}
+			});
+		});
+
+	</script>
+
+</head> 
+<body> 
+	<center>
+		<div class="page-header">
+  			<h1>Search!</h1>
+  		</div>
+	</center>
+	
+	<!-- Search div -->
+	<div class="row">
+		<div class="form-group col-md-4 col-md-offset-4">
+    		<div class="input-group">
+    			<input type="text" class="form-control input-lg textfield" name="query" id="query"></input>
+    				<span class="input-group-btn">
+      				<button class="btn btn-primary btn-lg" type="button" id="searchbtn"> 
+       					Go <span class="glyphicon glyphicon-search" aria-hidden="true" aria-label="Left Align"> </span>
+       				</button>
+    		</div>
+    		
+  		</div>
+  	</div>
+
+  	<!-- Prototype div for a result block -->
+	<div class="row" style="display: none;" id="prototype">
+		<div class="col-md-3"> 
+			<p class="text-right score"></p>
+		</div>
+		<div class="col-md-9">
+			<h3 class="title"></h3>
+			<p class="url"></p>
+			<p><strong>Last modified:</strong> <em><span class="last_modified"></span></em>, <span class="size"></span>B</p>
+			<ul class="list-inline"></ul>
+			<dl class="dl-horizontal">
+  				<dt>Parent link</dt>
+  				<dd class="parent_links"></dd>
+  				<dt>Children links</dt>
+  				<dd class="children_links"></dd>
+			</dl>
+		</div>
+	</div>
+
+	<!-- Div to apply the results with JS -->
+	<div id="results"></div>
+	
+</body> 
+</html> 
