@@ -1,6 +1,6 @@
 ## Search Engine 
 
-A search engine written in Java. With web crawler and indexer. 
+A search engine written in Java, implemented with web crawler and indexer. Supports title-matching mechanism and phrase queries (e.g. "hong kong").
 
 ## Run the search engine
 To run this program please follow these steps.
