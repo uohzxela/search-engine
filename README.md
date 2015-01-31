@@ -1,3 +1,7 @@
+## Search Engine 
+
+A search engine written in Java. With web crawler and indexer. 
+
 ## Run the search engine
 To run this program please follow these steps.
 
