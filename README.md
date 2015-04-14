@@ -1,6 +1,6 @@
 ## Search Engine 
 
-A search engine written in Java with clean and responsive AJAX-laden interface. 
+A search engine written from scratch in Java with clean and responsive AJAX-laden interface. 
 
 Video demo: https://www.dropbox.com/s/ebzs99bgi3fnrf2/search_engine.mp4?dl=0
 
