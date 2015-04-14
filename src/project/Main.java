@@ -107,7 +107,7 @@ public class Main {
 	 * 
 	 */
 	public static void startSpider(){
-		Spider2 spider = new Spider2("http://www.cse.ust.hk/~ericzhao/COMP4321/TestPages/testpage.htm");
+		Spider2 spider = new Spider2("http://www.nus.edu.sg");
 		System.out.println("A new spider instance has been created.");
 		System.out.println("Now crawling...");
 		

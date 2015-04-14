@@ -16,8 +16,8 @@ public class StopStem {
 		stopWords = new java.util.HashSet<String>();
 
 		try {
-			FileReader file = new FileReader(stopWordFile);
-			BufferedReader br = new BufferedReader(file);
+			InputStream file = getClass().getResourceAsStream(stopWordFile);
+			BufferedReader br = new BufferedReader(new InputStreamReader(file));
 
 			String line = br.readLine();
 			while (line != null) {
@@ -30,7 +30,7 @@ public class StopStem {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
 	}
 
 	/**

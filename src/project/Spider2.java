@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.htmlparser.beans.LinkBean;
 import org.htmlparser.beans.StringBean;
 import org.htmlparser.util.ParserException;
@@ -27,7 +28,7 @@ import org.jsoup.nodes.Document;
 
 public class Spider2 {
 
-	static final int nbPagesToIndex = 500;
+	static final int nbPagesToIndex = 1000;
 
 	URL url;
 	Database2 db;
@@ -79,13 +80,13 @@ public class Spider2 {
 
 		int i = 0; // number of pages indexed
 		while (i < nbPagesToIndex && !urlList.isEmpty()) {
-//			String urlStr = urlList.removeFirst();
+			// String urlStr = urlList.removeFirst();
 			Iterator<String> itr = urlList.iterator();
-			
+
 			String urlStr = itr.next();
 			itr.remove();
 			URL obj = new URL(urlStr);
-//			String urlStr = obj.toString();
+			// String urlStr = obj.toString();
 			Document doc;
 			try {
 				doc = Jsoup
@@ -129,7 +130,7 @@ public class Spider2 {
 				lastModified = sdf.format(date);
 			}
 
-			if (isToBeIndexed(urlStr, lastModified)) {
+			if (isToBeIndexed(urlStr, lastModified, doc)) {
 				// String content = extractStrings(urlStr, false);
 				String content = doc.body().text();
 				// String title = content.split("\n")[0];
@@ -147,7 +148,7 @@ public class Spider2 {
 				// word frequencies and positions
 				Hashtable<Integer, Posting> postingsForTitle = new Hashtable<Integer, Posting>();
 				Hashtable<Integer, Posting> postingsForBody = new Hashtable<Integer, Posting>();
-	
+
 				// max term frequencies
 				int maxTermFreqTitle = createPostings(title, pageId,
 						postingsForTitle);
@@ -178,12 +179,10 @@ public class Spider2 {
 	private void computeTermWeightsForInvertedIndex(
 			HashMap<Integer, List<Posting>> invertedIndex, int totalNumPages,
 			boolean isBody) {
-		// TODO Auto-generated method stub
 
 		for (Map.Entry<Integer, List<Posting>> entry : invertedIndex.entrySet()) {
 			int tf, maxTf;
 			double idf, df, N = totalNumPages;
-			Integer wordId = entry.getKey();
 			List<Posting> postingList = entry.getValue();
 			df = postingList.size();
 			for (Posting p : postingList) {
@@ -194,17 +193,17 @@ public class Spider2 {
 				idf = Math.log(N / df) / Math.log(2);
 
 				double termWeight = tf * idf / maxTf;
-//				System.out.println("termWeight: " + termWeight);
-//				if (termWeight == 0.00) {
-//					System.out.println("df: " + df + ", tf: " + tf
-//							+ ", maxTf: " + maxTf + ", idf: " + idf);
-//					System.out.println("N: " + N);
-//					System.out.println("df: " + df);
-//					System.out.println("N/df = " + N / df);
-//					System.out.println("Math.log(totalNumPages/df) = "
-//							+ Math.log(N / df));
-//					System.out.println("Math.log(2) = " + Math.log(2));
-//				}
+				// System.out.println("termWeight: " + termWeight);
+				// if (termWeight == 0.00) {
+				// System.out.println("df: " + df + ", tf: " + tf
+				// + ", maxTf: " + maxTf + ", idf: " + idf);
+				// System.out.println("N: " + N);
+				// System.out.println("df: " + df);
+				// System.out.println("N/df = " + N / df);
+				// System.out.println("Math.log(totalNumPages/df) = "
+				// + Math.log(N / df));
+				// System.out.println("Math.log(2) = " + Math.log(2));
+				// }
 				p.setTermWeight(termWeight);
 			}
 		}
@@ -220,10 +219,18 @@ public class Spider2 {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	private boolean isToBeIndexed(String url, String lastModified)
+	private boolean isToBeIndexed(String url, String lastModified, Document doc)
 			throws IOException {
-		if (!urlIndexed.contains(url) || url.contains("zh-hans"))
+		try {
+			if (doc == null || doc.title().equals("") || doc.body().text() == null) {
+				return false;
+			} 
+		} catch (NullPointerException e) {
+			return false;
+		}
+		if (!urlIndexed.contains(url)) {
 			return true;
+		}
 		String oldLastModified = db.getUrlLastModified(url);
 		if (oldLastModified != null && lastModified != null) {
 			SimpleDateFormat format = new SimpleDateFormat(
@@ -234,8 +241,9 @@ public class Spider2 {
 				Calendar cal = Calendar.getInstance(); // creates calendar
 				cal.setTime(oldDate); // sets calendar time/date
 				cal.add(Calendar.HOUR_OF_DAY, 3); // adds one hour
-				oldDate = cal.getTime(); // returns new date object, one hour in the
-								// future
+				oldDate = cal.getTime(); // returns new date object, one hour in
+											// the
+				// future
 				Date date = format.parse(lastModified);
 				if (date.after(oldDate)) {
 					System.out.println("date is after old date");
@@ -276,7 +284,7 @@ public class Spider2 {
 			if (w.length() > 0) {
 				if (!stopStem.isStopWord(w)) {
 					String stemmedWord = stopStem.stem(w);
-//					System.out.println("stemmed word: " + stemmedWord);
+					// System.out.println("stemmed word: " + stemmedWord);
 					int wordId = db.addWord(stemmedWord);
 					Posting posting = postings.get(wordId);
 					// compute the new term frequency of the word
@@ -383,30 +391,15 @@ public class Spider2 {
 		LinkBean lb = new LinkBean();
 		lb.setURL(resource);
 		URL[] URL_array = lb.getLinks();
-		if (URL_array.length != 0) {
+		if (URL_array!=null && URL_array.length != 0) {
 			childURLs.put(parentId, URL_array);
 			for (int i = 0; i < URL_array.length; i++) {
-				urlList.add(URL_array[i].toString());
+				String url = URL_array[i].toString();
+				if (url.contains("nus") && !url.contains("zh-hans") && !url.contains("zh-hant") &&  !urlIndexed.contains(url)) {
+					urlList.add(url);
+				}
 			}
 		}
-	}
-
-	/**
-	 * Extract the text from a page.
-	 * 
-	 * @return The textual contents of the page.
-	 * @param links
-	 *            if <code>true</code> include hyperlinks in output.
-	 * @exception ParserException
-	 *                If a parse error occurs.
-	 */
-	private String extractStrings(String resource, boolean links)
-			throws ParserException {
-		StringBean sb;
-		sb = new StringBean();
-		sb.setLinks(links);
-		sb.setURL(resource);
-		return (sb.getStrings());
 	}
 
 	/**

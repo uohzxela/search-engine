@@ -63,7 +63,7 @@ public class Database2 {
 	public Database2() throws IOException {
 		currPageId = 0;
 		currWordId = 0;
-			String path = "/home/hvingelby/workspace/comp4321-search-engine/";
+			String path = "/home/alex/git-projects/search-engine/db";
 			recman = RecordManagerFactory.createRecordManager(path+"projectRM");
 
 			System.out.println();
@@ -237,6 +237,7 @@ public class Database2 {
 		val.add(postingsForBody);
 		pageTable.put(pageId, val);
 		System.out.println("Page " + pageId + " added: " + title);
+		System.out.println(url);
 	}
 	
 	// TODO Maybe create a class called Page for easier retrieval by getter and setter methods instead of hardcoded index via vector list

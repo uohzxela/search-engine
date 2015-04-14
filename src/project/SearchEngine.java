@@ -224,9 +224,13 @@ public class SearchEngine {
 
 	private void parseQuery(String rawQuery, ArrayList<String> freeTextQuery,
 			ArrayList<String> phraseQuery) {
-		rawQuery = rawQuery.toLowerCase();
-		rawQuery = extractPhrases(rawQuery, phraseQuery);
-		extractFreeText(rawQuery, freeTextQuery);
+		try {
+			rawQuery = rawQuery.toLowerCase();
+			rawQuery = extractPhrases(rawQuery, phraseQuery);
+			extractFreeText(rawQuery, freeTextQuery);
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
 
 	}
 
